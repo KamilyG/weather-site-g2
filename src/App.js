@@ -1,25 +1,22 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import WeatherForm from "./components/WeatherForm";
+import WeatherDisplay from "./components/WeatherDisplay";
+import { fetchWeather } from "./utils/fetchWeather";
 
 export default function App() {
-  const [city, setCity] = useState("");
   const [weatherForecast, setWeatherForecast] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleChange = (event) => {
-    setCity(event.target.value);
-  };
-
-  const handleSearch = () => {
-    fetch(
-      `https://api.weatherapi.com/v1/current.json?key=908c09f9c65546d38d2134121241606&q=${city}&lang=pt`
-    )
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        }
-      })
+  const handleSearch = (city) => {
+    fetchWeather(city)
       .then((data) => {
         console.log(data);
         setWeatherForecast(data);
+        setError(null);
+      })
+      .catch((error) => {
+        setWeatherForecast(null);
+        setError(error);
       });
   };
 
@@ -38,38 +35,9 @@ export default function App() {
             Digite o nome da sua cidade e clique em pesquisar.
           </p>
 
-          <div className="row mb-4">
-            <div className="col-md-6">
-              <input
-                onChange={handleChange}
-                className="form-control"
-                value={city}
-              />
-            </div>
-          </div>
-
-          <button onClick={handleSearch} className="btn btn-primary btn-lg">
-            Pesquisar
-          </button>
-
-          {weatherForecast ? (
-            <div>
-              <div className="mt-4 d-flex align-items-center">
-                <div>
-                  <img src={weatherForecast.current.condition.icon} />
-                </div>
-
-                <div>
-                  <h3>
-                    Hoje o dia está: {weatherForecast.current.condition.text}
-                  </h3>
-                  <p className="lead">
-                    Temperatura: {weatherForecast.current.temp_c}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : null}
+          <WeatherForm onSearch={handleSearch} />
+          
+          <WeatherDisplay weatherForecast={weatherForecast} error={error} />
         </div>
       </main>
     </div>
